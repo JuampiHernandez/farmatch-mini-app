@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 
 interface UserData {
-  interests: string;
-  vibes: string;
-  goals: string;
-  availability: string;
+  focus: string;
+  ecosystem: string;
+  project: string;
+  approach: string;
+  motto: string;
   timestamp: number;
 }
 
