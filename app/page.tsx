@@ -8,7 +8,7 @@ import {
 } from "@coinbase/onchainkit/minikit";
 import { Name, Identity } from "@coinbase/onchainkit/identity";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAccount } from "wagmi";
+import { usePrivy } from "@privy-io/react-auth";
 import Check from "./svg/Check";
 
 export default function App() {
@@ -24,7 +24,7 @@ export default function App() {
 
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
-  const { address } = useAccount();
+  const { login, authenticated, user } = usePrivy();
   const sendNotification = useNotification();
 
   useEffect(() => {
@@ -39,29 +39,41 @@ export default function App() {
   }, [addFrame, setFrameAdded]);
 
   const saveFrameButton = useMemo(() => {
+    if (!authenticated) {
+      return (
+        <button
+          type="button"
+          onClick={() => login()}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-semibold"
+        >
+          Connect
+        </button>
+      );
+    }
+
     if (context && !context.client.added) {
       return (
         <button
           type="button"
           onClick={handleAddFrame}
-          className="cursor-pointer bg-transparent font-semibold text-sm"
+          className="cursor-pointer bg-transparent font-semibold text-sm border border-purple-300 px-4 py-2 rounded-lg hover:bg-purple-50"
         >
-          + SAVE FRAME
+          + Save Frame
         </button>
       );
     }
 
     if (frameAdded) {
       return (
-        <div className="flex items-center space-x-1 text-sm font-semibold animate-fade-out">
+        <div className="flex items-center space-x-1 text-sm font-semibold text-green-600 px-4 py-2">
           <Check />
-          <span>SAVED</span>
+          <span>Saved</span>
         </div>
       );
     }
 
     return null;
-  }, [context, handleAddFrame, frameAdded]);
+  }, [context, handleAddFrame, frameAdded, authenticated, login]);
 
   const questions = [
     {
@@ -82,7 +94,12 @@ export default function App() {
     }
   ];
 
-  const handleAnswer = (answer: string) => {
+  const handleAnswer = async (answer: string) => {
+    if (!authenticated) {
+      login();
+      return;
+    }
+
     setAnswers(prev => ({
       ...prev,
       [Object.keys(answers)[currentStep]]: answer
@@ -91,43 +108,63 @@ export default function App() {
     if (currentStep < questions.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
-      // Submit answers and find matches
-      handleSubmit();
+      await handleSubmit();
     }
   };
 
   const handleSubmit = async () => {
-    // Here we would normally send the data to our backend
-    // For now, we'll just show a success notification
     try {
-      await sendNotification({
-        title: "Profile Created! 🎉",
-        body: "We&apos;ll notify you when we find your matches!"
+      // Send data to our API
+      const response = await fetch('/api/match', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          answers,
+          userId: user?.id || '',
+          walletAddress: user?.wallet?.address || '',
+        }),
       });
+
+      const data = await response.json();
+
+      if (data.success) {
+        await sendNotification({
+          title: "Profile Created! 🎉",
+          body: "We&apos;ll notify you when we find your matches!"
+        });
+      } else {
+        throw new Error('Failed to save profile');
+      }
     } catch (error) {
-      console.error("Failed to send notification:", error);
+      console.error("Failed to process profile:", error);
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen sm:min-h-[820px] font-sans bg-gradient-to-b from-purple-50 to-pink-50 text-black items-center relative">
       <div className="w-screen max-w-[520px]">
-        <header className="mr-2 mt-1 flex justify-between">
-          <div className="justify-start pl-1">
-            {address ? (
-              <Identity
-                address={address}
-                className="!bg-inherit p-0 [&>div]:space-x-2"
-              >
-                <Name className="text-inherit" />
-              </Identity>
+        <header className="mr-2 mt-1 flex justify-between items-center p-4 bg-white/50 backdrop-blur-sm rounded-lg m-4">
+          <div className="justify-start">
+            {authenticated ? (
+              <div className="flex items-center space-x-2">
+                {user?.wallet?.address && (
+                  <Identity
+                    address={`0x${user.wallet.address.replace('0x', '')}`}
+                    className="!bg-inherit p-0 [&>div]:space-x-2"
+                  >
+                    <Name className="text-inherit" />
+                  </Identity>
+                )}
+              </div>
             ) : (
-              <div className="pl-2 pt-1 text-gray-500 text-sm font-semibold">
-                NOT CONNECTED
+              <div className="text-gray-500 text-sm font-semibold">
+                Not Connected
               </div>
             )}
           </div>
-          <div className="pr-1 justify-end">{saveFrameButton}</div>
+          <div className="justify-end">{saveFrameButton}</div>
         </header>
 
         <main className="p-6">
