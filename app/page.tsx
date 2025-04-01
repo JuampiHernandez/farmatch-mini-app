@@ -11,6 +11,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import Check from "./svg/Check";
 
+interface Match {
+  address: string;
+  score: number;
+  commonalities: string[];
+}
+
 export default function App() {
   const { setFrameReady, isFrameReady, context } = useMiniKit();
   const [frameAdded, setFrameAdded] = useState(false);
@@ -22,6 +28,9 @@ export default function App() {
     goals: "",
     availability: ""
   });
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [noMatches, setNoMatches] = useState(false);
+  const [noMatchMessage, setNoMatchMessage] = useState('');
 
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
@@ -101,20 +110,24 @@ export default function App() {
 
   const questions = [
     {
-      title: "What are your main interests?",
-      options: ["Tech & Web3", "Art & NFTs", "DeFi & Trading", "Social & Community"]
+      title: "What's your primary focus in Web3?",
+      options: ["Full-stack Development", "Smart Contracts", "Frontend/UX", "Protocol Design"]
     },
     {
-      title: "What&apos;s your vibe?",
-      options: ["Builder/Maker", "Investor/Trader", "Content Creator", "Community Leader"]
+      title: "Which ecosystem do you primarily build in?",
+      options: ["OP Stack", "Ethereum", "Solana", "ZK stcak"]
     },
     {
-      title: "What are you looking for?",
-      options: ["Collaboration", "Mentorship", "Investment", "Friendship"]
+      title: "What type of project interests you most?",
+      options: ["DeFi Protocols", "Social dApps", "Infrastructure", "Developer Tools"]
     },
     {
-      title: "How active are you on Farcaster?",
-      options: ["Daily Caster", "Weekly Chatter", "Occasional Lurker", "Just Starting"]
+      title: "Your preferred development approach?",
+      options: ["Move Fast & Ship", "Security First", "User-Centric", "Research Driven"]
+    },
+    {
+      title: "Which phrase describes you best?",
+      options: ["Show, don't tell", "Let's fucking build!", "Still day one", "Just build it"]
     }
   ];
 
@@ -138,7 +151,6 @@ export default function App() {
 
   const handleSubmit = async () => {
     try {
-      // Send data to our API
       const response = await fetch('/api/match', {
         method: 'POST',
         headers: {
@@ -146,7 +158,6 @@ export default function App() {
         },
         body: JSON.stringify({
           answers,
-          userId: user?.id || '',
           walletAddress: user?.wallet?.address || '',
         }),
       });
@@ -155,9 +166,15 @@ export default function App() {
 
       if (data.success) {
         setIsSubmitted(true);
+        if (data.noMatches) {
+          setNoMatches(true);
+          setNoMatchMessage(data.message);
+        } else {
+          setMatches(data.matches);
+        }
         await sendNotification({
           title: "Profile Created! 🎉",
-          body: "We'll notify you when we find your matches!"
+          body: data.noMatches ? data.message : "We found some matches for you!"
         });
       } else {
         throw new Error('Failed to save profile');
@@ -165,6 +182,37 @@ export default function App() {
     } catch (error) {
       console.error("Failed to process profile:", error);
     }
+  };
+
+  const renderMatches = () => {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-green-600 mb-6">Your Builder Matches! 🎉</h2>
+        {matches.map((match, index) => (
+          <div key={match.address} className="bg-white p-6 rounded-lg shadow-sm border border-purple-100">
+            <div className="flex items-center justify-between mb-4">
+              <Identity
+                address={`0x${match.address.replace('0x', '')}`}
+                className="!bg-inherit p-0 [&>div]:space-x-2"
+              >
+                <Name className="text-inherit" />
+              </Identity>
+              <span className="text-purple-600 font-semibold">
+                {match.score}% Match
+              </span>
+            </div>
+            <div className="space-y-2">
+              {match.commonalities.map((common, i) => (
+                <div key={i} className="text-sm text-gray-600 flex items-center">
+                  <span className="mr-2">•</span>
+                  {common}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   const renderContent = () => {
@@ -183,12 +231,15 @@ export default function App() {
     }
 
     if (isSubmitted) {
-      return (
-        <div className="text-center space-y-4">
-          <h2 className="text-xl font-semibold text-green-600">Thanks for submitting! 🎉</h2>
-          <p className="text-gray-600">We'll notify you when we find your matches.</p>
-        </div>
-      );
+      if (noMatches) {
+        return (
+          <div className="text-center space-y-4">
+            <h2 className="text-xl font-semibold text-purple-600">Thanks for submitting! 🎉</h2>
+            <p className="text-gray-600">{noMatchMessage}</p>
+          </div>
+        );
+      }
+      return renderMatches();
     }
 
     if (currentStep === -1) {
