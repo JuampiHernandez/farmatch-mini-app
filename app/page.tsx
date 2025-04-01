@@ -269,9 +269,9 @@ export default function App() {
             </div>
           </div>
           <div className="space-y-3">
-            {questions[currentStep].options.map((option, index) => (
+            {questions[currentStep].options.map((option) => (
               <button
-                key={index}
+                key={option}
                 onClick={() => handleAnswer(option)}
                 className="w-full p-4 text-left rounded-lg border border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200"
               >
