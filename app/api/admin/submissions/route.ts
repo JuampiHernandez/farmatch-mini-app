@@ -1,6 +1,18 @@
 import { NextResponse } from 'next/server';
 import { Redis } from '@upstash/redis';
 
+interface UserData {
+  interests: string;
+  vibes: string;
+  goals: string;
+  availability: string;
+  timestamp: number;
+}
+
+interface Submission extends UserData {
+  id: string;
+}
+
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL || '',
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
@@ -20,11 +32,11 @@ export async function GET(req: Request) {
 
     // Get all user keys
     const userKeys = await redis.keys('user:*');
-    const submissions = [];
+    const submissions: Submission[] = [];
 
     // Fetch data for each user
     for (const key of userKeys) {
-      const userData = await redis.hgetall(key);
+      const userData = await redis.hgetall(key) as UserData | null;
       if (userData) {
         submissions.push({
           id: key.split(':')[1],
