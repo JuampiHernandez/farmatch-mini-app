@@ -188,7 +188,7 @@ export default function App() {
     return (
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-green-600 mb-6">Your Builder Matches! 🎉</h2>
-        {matches.map((match, index) => (
+        {matches.map((match) => (
           <div key={match.address} className="bg-white p-6 rounded-lg shadow-sm border border-purple-100">
             <div className="flex items-center justify-between mb-4">
               <Identity
