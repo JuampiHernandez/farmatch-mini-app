@@ -1,25 +1,30 @@
 import { NextResponse } from 'next/server';
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || '',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+});
 
 export async function POST(req: Request) {
   try {
     const { answers, fid } = await req.json();
 
     // Store user profile
-    await kv.hset(`user:${fid}`, {
+    await redis.hset(`user:${fid}`, {
       ...answers,
       timestamp: Date.now(),
     });
 
     // Get all other users
-    const users = await kv.keys('user:*');
+    const users = await redis.keys('user:*');
     const matches = [];
 
     // Simple matching algorithm
     for (const userKey of users) {
       if (userKey === `user:${fid}`) continue;
       
-      const otherUser = await kv.hgetall(userKey);
+      const otherUser = await redis.hgetall(userKey);
       if (!otherUser) continue;
 
       // Calculate match score (simple version)
