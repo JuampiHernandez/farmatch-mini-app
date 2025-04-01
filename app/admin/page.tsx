@@ -4,10 +4,11 @@ import { useState } from 'react';
 
 interface Submission {
   id: string;
-  interests: string;
-  vibes: string;
-  goals: string;
-  availability: string;
+  focus: string;
+  ecosystem: string;
+  project: string;
+  approach: string;
+  motto: string;
   timestamp: number;
 }
 
@@ -70,10 +71,11 @@ export default function AdminPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interests</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vibes</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goals</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activity</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Focus</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ecosystem</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approach</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motto</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 </tr>
               </thead>
@@ -81,10 +83,11 @@ export default function AdminPage() {
                 {submissions.map((sub) => (
                   <tr key={sub.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{sub.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.interests}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.vibes}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.goals}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.availability}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.focus}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.ecosystem}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.project}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.approach}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.motto}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(sub.timestamp).toLocaleString()}
                     </td>

@@ -23,10 +23,11 @@ export default function App() {
   const [currentStep, setCurrentStep] = useState(-1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [answers, setAnswers] = useState({
-    interests: "",
-    vibes: "",
-    goals: "",
-    availability: ""
+    focus: "",
+    ecosystem: "",
+    project: "",
+    approach: "",
+    motto: ""
   });
   const [matches, setMatches] = useState<Match[]>([]);
   const [noMatches, setNoMatches] = useState(false);
