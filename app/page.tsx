@@ -5,7 +5,6 @@ import {
   useAddFrame,
   useOpenUrl,
   useNotification,
-  useViewProfile,
 } from "@coinbase/onchainkit/minikit";
 import { Name, Identity } from "@coinbase/onchainkit/identity";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -27,7 +26,6 @@ export default function App() {
   const openUrl = useOpenUrl();
   const { address } = useAccount();
   const sendNotification = useNotification();
-  const viewProfile = useViewProfile();
 
   useEffect(() => {
     if (!isFrameReady) {
@@ -71,7 +69,7 @@ export default function App() {
       options: ["Tech & Web3", "Art & NFTs", "DeFi & Trading", "Social & Community"]
     },
     {
-      title: "What's your vibe?",
+      title: "What&apos;s your vibe?",
       options: ["Builder/Maker", "Investor/Trader", "Content Creator", "Community Leader"]
     },
     {
@@ -85,7 +83,6 @@ export default function App() {
   ];
 
   const handleAnswer = (answer: string) => {
-    const currentQuestion = questions[currentStep];
     setAnswers(prev => ({
       ...prev,
       [Object.keys(answers)[currentStep]]: answer
@@ -105,7 +102,7 @@ export default function App() {
     try {
       await sendNotification({
         title: "Profile Created! 🎉",
-        body: "We'll notify you when we find your matches!"
+        body: "We&apos;ll notify you when we find your matches!"
       });
     } catch (error) {
       console.error("Failed to send notification:", error);
@@ -165,7 +162,7 @@ export default function App() {
           ) : (
             <div className="text-center">
               <h2 className="text-xl font-semibold text-green-600 mb-4">Profile Complete!</h2>
-              <p className="text-gray-600 mb-6">We'll notify you when we find your matches.</p>
+              <p className="text-gray-600 mb-6">We&apos;ll notify you when we find your matches.</p>
             </div>
           )}
         </main>
