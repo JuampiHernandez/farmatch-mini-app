@@ -14,7 +14,8 @@ import Check from "./svg/Check";
 export default function App() {
   const { setFrameReady, isFrameReady, context } = useMiniKit();
   const [frameAdded, setFrameAdded] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(-1);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [answers, setAnswers] = useState({
     interests: "",
     vibes: "",
@@ -130,9 +131,10 @@ export default function App() {
       const data = await response.json();
 
       if (data.success) {
+        setIsSubmitted(true);
         await sendNotification({
           title: "Profile Created! 🎉",
-          body: "We&apos;ll notify you when we find your matches!"
+          body: "We'll notify you when we find your matches!"
         });
       } else {
         throw new Error('Failed to save profile');
@@ -140,6 +142,74 @@ export default function App() {
     } catch (error) {
       console.error("Failed to process profile:", error);
     }
+  };
+
+  const renderContent = () => {
+    if (!authenticated) {
+      return (
+        <div className="text-center space-y-6">
+          <h2 className="text-xl font-semibold text-gray-800">Connect your wallet to start</h2>
+          <button
+            onClick={() => login()}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-base font-semibold"
+          >
+            Connect Wallet
+          </button>
+        </div>
+      );
+    }
+
+    if (isSubmitted) {
+      return (
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold text-green-600">Thanks for submitting! 🎉</h2>
+          <p className="text-gray-600">We'll notify you when we find your matches.</p>
+        </div>
+      );
+    }
+
+    if (currentStep === -1) {
+      return (
+        <div className="text-center space-y-6">
+          <h2 className="text-xl font-semibold text-gray-800">Ready to find your match?</h2>
+          <button
+            onClick={() => setCurrentStep(0)}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-base font-semibold"
+          >
+            Start Questionnaire
+          </button>
+        </div>
+      );
+    }
+
+    if (currentStep < questions.length) {
+      return (
+        <div className="space-y-6">
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">{questions[currentStep].title}</h2>
+            <div className="w-full h-2 bg-gray-200 rounded-full mt-4">
+              <div 
+                className="h-full bg-purple-600 rounded-full transition-all duration-300"
+                style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
+              />
+            </div>
+          </div>
+          <div className="space-y-3">
+            {questions[currentStep].options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleAnswer(option)}
+                className="w-full p-4 text-left rounded-lg border border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -173,35 +243,7 @@ export default function App() {
             <p className="text-gray-600">Find your perfect Farcaster match</p>
           </div>
 
-          {currentStep < questions.length ? (
-            <div className="space-y-6">
-              <div className="text-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">{questions[currentStep].title}</h2>
-                <div className="w-full h-2 bg-gray-200 rounded-full mt-4">
-                  <div 
-                    className="h-full bg-purple-600 rounded-full transition-all duration-300"
-                    style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
-                  />
-                </div>
-              </div>
-              <div className="space-y-3">
-                {questions[currentStep].options.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswer(option)}
-                    className="w-full p-4 text-left rounded-lg border border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-green-600 mb-4">Profile Complete!</h2>
-              <p className="text-gray-600 mb-6">We&apos;ll notify you when we find your matches.</p>
-            </div>
-          )}
+          {renderContent()}
         </main>
 
         <footer className="absolute bottom-4 flex items-center w-screen max-w-[520px] justify-center">
