@@ -8,10 +8,17 @@ const redis = new Redis({
 
 export async function POST(req: Request) {
   try {
-    const { answers, fid } = await req.json();
+    const { answers, walletAddress } = await req.json();
 
-    // Store user profile
-    await redis.hset(`user:${fid}`, {
+    if (!walletAddress) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Wallet address is required' 
+      }, { status: 400 });
+    }
+
+    // Store user profile with wallet address as key
+    await redis.hset(`user:${walletAddress}`, {
       ...answers,
       timestamp: Date.now(),
     });
@@ -22,7 +29,7 @@ export async function POST(req: Request) {
 
     // Simple matching algorithm
     for (const userKey of users) {
-      if (userKey === `user:${fid}`) continue;
+      if (userKey === `user:${walletAddress}`) continue;
       
       const otherUser = await redis.hgetall(userKey);
       if (!otherUser) continue;
@@ -36,7 +43,7 @@ export async function POST(req: Request) {
 
       if (score >= 50) { // Only include matches with >50% compatibility
         matches.push({
-          fid: userKey.split(':')[1],
+          address: userKey.split(':')[1],
           score,
         });
       }

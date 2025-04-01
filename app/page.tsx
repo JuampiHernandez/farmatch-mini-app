@@ -25,7 +25,7 @@ export default function App() {
 
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
-  const { login, authenticated, user } = usePrivy();
+  const { login, authenticated, user, logout } = usePrivy();
   const sendNotification = useNotification();
 
   useEffect(() => {
@@ -54,27 +54,50 @@ export default function App() {
 
     if (context && !context.client.added) {
       return (
-        <button
-          type="button"
-          onClick={handleAddFrame}
-          className="cursor-pointer bg-transparent font-semibold text-sm border border-purple-300 px-4 py-2 rounded-lg hover:bg-purple-50"
-        >
-          + Save Frame
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={handleAddFrame}
+            className="cursor-pointer bg-transparent font-semibold text-sm border border-purple-300 px-4 py-2 rounded-lg hover:bg-purple-50"
+          >
+            + Save Frame
+          </button>
+          <button
+            onClick={() => logout()}
+            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold"
+          >
+            Disconnect
+          </button>
+        </div>
       );
     }
 
     if (frameAdded) {
       return (
-        <div className="flex items-center space-x-1 text-sm font-semibold text-green-600 px-4 py-2">
-          <Check />
-          <span>Saved</span>
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 text-sm font-semibold text-green-600 px-4 py-2">
+            <Check />
+            <span>Saved</span>
+          </div>
+          <button
+            onClick={() => logout()}
+            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold"
+          >
+            Disconnect
+          </button>
         </div>
       );
     }
 
-    return null;
-  }, [context, handleAddFrame, frameAdded, authenticated, login]);
+    return (
+      <button
+        onClick={() => logout()}
+        className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold"
+      >
+        Disconnect
+      </button>
+    );
+  }, [context, handleAddFrame, frameAdded, authenticated, login, logout]);
 
   const questions = [
     {
