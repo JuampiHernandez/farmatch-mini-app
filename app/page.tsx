@@ -185,30 +185,39 @@ export default function App() {
     }
   };
 
+  // Add a helper function to truncate text
+  const truncateText = (text: string, maxLength: number = 15) => {
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, maxLength)}...`;
+  };
+
   const renderMatches = () => {
     return (
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-green-600 mb-6">Your Builder Matches! 🎉</h2>
-        {matches.map((match) => (
-          <div key={match.address} className="bg-white p-6 rounded-lg shadow-sm border border-purple-100">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-gray-800 font-medium">
-                @{match.address}
-              </span>
-              <span className="text-purple-600 font-semibold">
-                {match.score}% Match
-              </span>
+        {matches.map((match) => {
+          // Create a brief profile description from the commonalities
+          const profileDesc = match.commonalities
+            .filter(c => c.startsWith('Both focused on') || c.startsWith('Both build on'))
+            .map(c => c.replace('Both focused on ', '').replace('Both build on ', ''))
+            .join(' • ');
+
+          return (
+            <div key={match.address} className="bg-white p-6 rounded-lg shadow-sm border border-purple-100">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-800 font-medium">
+                  @{truncateText(match.address)}
+                </span>
+                <span className="text-purple-600 font-semibold">
+                  {match.score}% Match
+                </span>
+              </div>
+              <div className="text-sm text-gray-600">
+                {profileDesc || 'Builder'}
+              </div>
             </div>
-            <div className="space-y-2">
-              {match.commonalities.map((common, i) => (
-                <div key={i} className="text-sm text-gray-600 flex items-center">
-                  <span className="mr-2">•</span>
-                  {common}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
@@ -321,8 +330,8 @@ export default function App() {
             {isInFrame && (
               <div className="flex items-center space-x-2">
                 {userAddress && (
-                  <span className="text-gray-800 font-medium">
-                    {context?.user?.displayName || userAddress}
+                  <span className="text-gray-800 font-medium truncate max-w-[200px]">
+                    {truncateText(context?.user?.displayName || userAddress)}
                   </span>
                 )}
               </div>
