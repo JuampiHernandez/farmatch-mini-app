@@ -21,6 +21,7 @@ export default function App() {
   const { setFrameReady, isFrameReady, context } = useMiniKit();
   const [currentStep, setCurrentStep] = useState(-1);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showDebug, setShowDebug] = useState(false);
   const [answers, setAnswers] = useState({
     focus: "",
     ecosystem: "",
@@ -278,24 +279,34 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen sm:min-h-[820px] font-sans bg-gradient-to-b from-purple-50 to-pink-50 text-black items-center relative">
+      {/* Debug Toggle Button */}
+      <button
+        onClick={() => setShowDebug(prev => !prev)}
+        className="absolute top-2 right-2 z-50 px-2 py-1 text-xs bg-gray-800 text-white rounded-md opacity-50 hover:opacity-100"
+      >
+        {showDebug ? 'Hide Debug' : 'Show Debug'}
+      </button>
+
       {/* Debug Information */}
-      <div className="w-full bg-gray-100 p-4 text-xs font-mono overflow-auto">
-        <div className="font-bold mb-2">Debug Information:</div>
-        <div>isFrameReady: {String(isFrameReady)}</div>
-        <div>isInFrame: {String(isInFrame)}</div>
-        <div>userAddress: {String(userAddress || 'none')}</div>
-        <div>currentStep: {currentStep}</div>
-        <div>frameAdded: {String(isFrameAdded)}</div>
-        <div>buttonIndex: {String((context as any)?.frame?.buttonIndex)}</div>
-        <div className="mt-2">
-          <div>Current Answers:</div>
-          <pre>{JSON.stringify(answers, null, 2)}</pre>
+      {showDebug && (
+        <div className="w-full bg-gray-100 p-4 text-xs font-mono overflow-auto max-h-96">
+          <div className="font-bold mb-2">Debug Information:</div>
+          <div>isFrameReady: {String(isFrameReady)}</div>
+          <div>isInFrame: {String(isInFrame)}</div>
+          <div>userAddress: {String(userAddress || 'none')}</div>
+          <div>currentStep: {currentStep}</div>
+          <div>frameAdded: {String(isFrameAdded)}</div>
+          <div>buttonIndex: {String((context as any)?.frame?.buttonIndex)}</div>
+          <div className="mt-2">
+            <div>Current Answers:</div>
+            <pre>{JSON.stringify(answers, null, 2)}</pre>
+          </div>
+          <div className="mt-2">
+            <div>Full Context:</div>
+            <pre>{JSON.stringify(context, null, 2)}</pre>
+          </div>
         </div>
-        <div className="mt-2">
-          <div>Full Context:</div>
-          <pre>{JSON.stringify(context, null, 2)}</pre>
-        </div>
-      </div>
+      )}
 
       <div className="w-screen max-w-[520px]">
         <header className="mr-2 mt-1 flex justify-between items-center p-4 bg-white/50 backdrop-blur-sm rounded-lg m-4">
