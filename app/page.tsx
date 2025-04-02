@@ -141,56 +141,61 @@ export default function App() {
     }
 
     const field = fieldOrder[currentStep];
-    console.log(`Setting ${field} to:`, answer);
+    console.log(`[Step ${currentStep + 1}/${questions.length}] Setting ${field} to:`, answer);
     
     setAnswers(prev => {
       const newAnswers = {
         ...prev,
         [field]: answer
       };
-      console.log('Updated answers:', newAnswers);
+      console.log('Current answers state:', newAnswers);
       return newAnswers;
     });
     
     if (currentStep < questions.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
+      console.log('Final answers before submission:', answers);
       await handleSubmit();
     }
   };
 
   const handleSubmit = async () => {
     try {
-      console.log('Submitting answers:', answers);
+      const payload = {
+        answers,
+        walletAddress: user?.wallet?.address || '',
+      };
+      console.log('Submitting payload:', payload);
+
       const response = await fetch('/api/match', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          answers,
-          walletAddress: user?.wallet?.address || '',
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
-      console.log('Response from server:', data);
+      console.log('Server response:', data);
 
-      if (data.success) {
-        setIsSubmitted(true);
-        if (data.noMatches) {
-          setNoMatches(true);
-          setNoMatchMessage(data.message);
-        } else {
-          setMatches(data.matches);
-        }
-        await sendNotification({
-          title: "Profile Created! 🎉",
-          body: data.noMatches ? data.message : "We found some matches for you!"
-        });
-      } else {
-        throw new Error('Failed to save profile');
+      if (!data.success) {
+        console.error('Server reported error:', data.error);
+        throw new Error(data.error || 'Failed to save profile');
       }
+
+      setIsSubmitted(true);
+      if (data.noMatches) {
+        setNoMatches(true);
+        setNoMatchMessage(data.message);
+      } else {
+        setMatches(data.matches);
+      }
+      
+      await sendNotification({
+        title: "Profile Created! 🎉",
+        body: data.noMatches ? data.message : "We found some matches for you!"
+      });
     } catch (error) {
       console.error("Failed to process profile:", error);
     }

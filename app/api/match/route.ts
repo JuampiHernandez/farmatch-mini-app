@@ -79,12 +79,21 @@ function calculateMatchScore(userAddress: string, userAnswers: UserAnswers, othe
 export async function POST(req: Request) {
   try {
     const { answers, walletAddress } = await req.json();
-    console.log('Received answers:', answers);
+    console.log('[API] Received data:', { answers, walletAddress });
 
     if (!walletAddress) {
       return NextResponse.json({ 
         success: false, 
         error: 'Wallet address is required' 
+      }, { status: 400 });
+    }
+
+    // Validate all required fields are present
+    if (!answers.motto || !answers.focus || !answers.ecosystem || !answers.project || !answers.approach) {
+      console.log('[API] Missing fields in answers:', answers);
+      return NextResponse.json({ 
+        success: false, 
+        error: 'All fields are required' 
       }, { status: 400 });
     }
 
@@ -95,16 +104,27 @@ export async function POST(req: Request) {
       approach: answers.approach,
       motto: answers.motto
     };
-    console.log('Processed userAnswers:', userAnswers);
+    console.log('[API] Processed answers:', userAnswers);
 
     // Store user profile with wallet address as key
-    const dataToStore = {
-      ...userAnswers,
-      timestamp: Date.now(),
-    };
-    console.log('Data being stored in Redis:', dataToStore);
-    
-    await redis.hset(`user:${walletAddress}`, dataToStore);
+    try {
+      const key = `user:${walletAddress}`;
+      const dataToStore = {
+        ...userAnswers,
+        timestamp: Date.now().toString(), // Convert to string for Redis
+      };
+      console.log('[API] Storing data in Redis:', { key, data: dataToStore });
+      
+      // Use hmset instead of hset
+      await redis.hmset(key, dataToStore);
+      
+      // Verify the data was stored
+      const storedData = await redis.hgetall(key);
+      console.log('[API] Verified stored data:', storedData);
+    } catch (redisError) {
+      console.error('[API] Redis storage error:', redisError);
+      throw redisError;
+    }
 
     // Get all other users
     const users = await redis.keys('user:*');
