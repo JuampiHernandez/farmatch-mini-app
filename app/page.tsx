@@ -40,12 +40,22 @@ export default function App() {
 
   const fieldOrder = ['focus', 'ecosystem', 'project', 'approach', 'motto'];
 
+  // Debug logging
+  console.log('Debug - Context:', {
+    context,
+    isFrameReady,
+    frame: (context as any)?.frame,
+    interactor: (context as any)?.frame?.interactor
+  });
+
   // Check if we're in a Farcaster frame context
-  const isInFrame = Boolean((context as any)?.frame);
+  const isInFrame = isFrameReady && Boolean((context as any)?.frame);
   const userAddress = (context as any)?.frame?.interactor?.verified_accounts?.[0] || '';
 
   useEffect(() => {
+    console.log('Effect running - isFrameReady:', isFrameReady);
     if (!isFrameReady) {
+      console.log('Setting frame ready...');
       setFrameReady();
     }
   }, [setFrameReady, isFrameReady]);
