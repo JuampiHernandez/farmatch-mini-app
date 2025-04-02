@@ -196,11 +196,14 @@ export default function App() {
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-green-600 mb-6">Your Builder Matches! 🎉</h2>
         {matches.map((match) => {
-          // Create a brief profile description from the commonalities
-          const profileDesc = match.commonalities
-            .filter(c => c.startsWith('Both focused on') || c.startsWith('Both build on'))
-            .map(c => c.replace('Both focused on ', '').replace('Both build on ', ''))
-            .join(' • ');
+          // Create a complete profile description
+          const focus = match.commonalities.find(c => c.includes('focused on'))?.replace('Both focused on ', '');
+          const ecosystem = match.commonalities.find(c => c.includes('build on'))?.replace('Both build on ', '');
+          const project = match.commonalities.find(c => c.includes('interested in'))?.replace('Both interested in ', '');
+          const approach = match.commonalities.find(c => c.includes('development approach'))?.replace('Similar development approach: ', '');
+          const motto = match.commonalities.find(c => c.includes('motto'))?.replace('Share the same motto: ', '');
+
+          const profileDesc = `${focus || 'Web3'} builder in ${ecosystem || 'crypto'}, working on ${project || 'cool projects'}. ${approach || ''} ${motto ? `"${motto}"` : ''}`.trim();
 
           return (
             <div key={match.address} className="bg-white p-6 rounded-lg shadow-sm border border-purple-100">
@@ -212,8 +215,8 @@ export default function App() {
                   {match.score}% Match
                 </span>
               </div>
-              <div className="text-sm text-gray-600">
-                {profileDesc || 'Builder'}
+              <div className="text-sm text-gray-600 leading-relaxed">
+                {profileDesc}
               </div>
             </div>
           );
