@@ -8,7 +8,7 @@ import {
 } from "@coinbase/onchainkit/minikit";
 import { Name, Identity } from "@coinbase/onchainkit/identity";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+// import { usePrivy } from "@privy-io/react-auth";
 import Check from "./svg/Check";
 
 interface Match {
@@ -35,10 +35,14 @@ export default function App() {
 
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
-  const { login, authenticated, user, logout } = usePrivy();
   const sendNotification = useNotification();
+  // const { login, authenticated, user, logout } = usePrivy();
 
   const fieldOrder = ['focus', 'ecosystem', 'project', 'approach', 'motto'];
+
+  // Check if we're in a Farcaster frame context
+  const isInFrame = Boolean(context?.client?.verified);
+  const userAddress = context?.client?.address || '';
 
   useEffect(() => {
     if (!isFrameReady) {
@@ -52,64 +56,33 @@ export default function App() {
   }, [addFrame, setFrameAdded]);
 
   const saveFrameButton = useMemo(() => {
-    if (!authenticated) {
-      return (
-        <button
-          type="button"
-          onClick={() => login()}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-semibold"
-        >
-          Connect
-        </button>
-      );
+    if (!isInFrame) {
+      return null;
     }
 
     if (context && !context.client.added) {
       return (
-        <div className="flex items-center space-x-2">
-          <button
-            type="button"
-            onClick={handleAddFrame}
-            className="cursor-pointer bg-transparent font-semibold text-sm border border-purple-300 px-4 py-2 rounded-lg hover:bg-purple-50"
-          >
-            + Save Frame
-          </button>
-          <button
-            onClick={() => logout()}
-            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold"
-          >
-            Disconnect
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleAddFrame}
+          className="cursor-pointer bg-transparent font-semibold text-sm border border-purple-300 px-4 py-2 rounded-lg hover:bg-purple-50"
+        >
+          + Save Frame
+        </button>
       );
     }
 
     if (frameAdded) {
       return (
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-1 text-sm font-semibold text-green-600 px-4 py-2">
-            <Check />
-            <span>Saved</span>
-          </div>
-          <button
-            onClick={() => logout()}
-            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold"
-          >
-            Disconnect
-          </button>
+        <div className="flex items-center space-x-1 text-sm font-semibold text-green-600 px-4 py-2">
+          <Check />
+          <span>Saved</span>
         </div>
       );
     }
 
-    return (
-      <button
-        onClick={() => logout()}
-        className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-semibold"
-      >
-        Disconnect
-      </button>
-    );
-  }, [context, handleAddFrame, frameAdded, authenticated, login, logout]);
+    return null;
+  }, [context, handleAddFrame, frameAdded, isInFrame]);
 
   const questions = [
     {
@@ -135,8 +108,7 @@ export default function App() {
   ];
 
   const handleAnswer = async (answer: string) => {
-    if (!authenticated) {
-      login();
+    if (!isInFrame) {
       return;
     }
 
@@ -164,7 +136,7 @@ export default function App() {
     try {
       const payload = {
         answers,
-        walletAddress: user?.wallet?.address || '',
+        walletAddress: userAddress,
       };
       console.log('Submitting payload:', payload);
 
@@ -192,10 +164,12 @@ export default function App() {
         setMatches(data.matches);
       }
       
-      await sendNotification({
-        title: "Profile Created! 🎉",
-        body: data.noMatches ? data.message : "We found some matches for you!"
-      });
+      if (context?.client.added) {
+        await sendNotification({
+          title: "Profile Created! 🎉",
+          body: data.noMatches ? data.message : "We found some matches for you!"
+        });
+      }
     } catch (error) {
       console.error("Failed to process profile:", error);
     }
@@ -233,16 +207,10 @@ export default function App() {
   };
 
   const renderContent = () => {
-    if (!authenticated) {
+    if (!isInFrame) {
       return (
         <div className="text-center space-y-6">
-          <h2 className="text-xl font-semibold text-gray-800">Connect your wallet to start</h2>
-          <button
-            onClick={() => login()}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-base font-semibold"
-          >
-            Connect Wallet
-          </button>
+          <h2 className="text-xl font-semibold text-gray-800">Please open this app in Farcaster</h2>
         </div>
       );
     }
@@ -308,20 +276,16 @@ export default function App() {
       <div className="w-screen max-w-[520px]">
         <header className="mr-2 mt-1 flex justify-between items-center p-4 bg-white/50 backdrop-blur-sm rounded-lg m-4">
           <div className="justify-start">
-            {authenticated ? (
+            {isInFrame && (
               <div className="flex items-center space-x-2">
-                {user?.wallet?.address && (
+                {userAddress && (
                   <Identity
-                    address={`0x${user.wallet.address.replace('0x', '')}`}
+                    address={`0x${userAddress.replace('0x', '')}`}
                     className="!bg-inherit p-0 [&>div]:space-x-2"
                   >
                     <Name className="text-inherit" />
                   </Identity>
                 )}
-              </div>
-            ) : (
-              <div className="text-gray-500 text-sm font-semibold">
-                Not Connected
               </div>
             )}
           </div>
