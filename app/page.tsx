@@ -19,7 +19,6 @@ interface Match {
 
 export default function App() {
   const { setFrameReady, isFrameReady, context } = useMiniKit();
-  const [frameAdded, setFrameAdded] = useState(false);
   const [currentStep, setCurrentStep] = useState(-1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [answers, setAnswers] = useState({
@@ -44,13 +43,14 @@ export default function App() {
   console.log('Debug - Context:', {
     context,
     isFrameReady,
-    frame: (context as any)?.frame,
-    interactor: (context as any)?.frame?.interactor
+    user: context?.user,
+    client: context?.client
   });
 
   // Check if we're in a Farcaster frame context
-  const isInFrame = isFrameReady && Boolean((context as any)?.frame);
-  const userAddress = (context as any)?.frame?.interactor?.verified_accounts?.[0] || '';
+  const isInFrame = isFrameReady && Boolean(context?.user?.fid);
+  const userAddress = context?.user?.username || '';
+  const isFrameAdded = Boolean(context?.client?.added);
 
   useEffect(() => {
     console.log('Effect running - isFrameReady:', isFrameReady);
@@ -61,16 +61,15 @@ export default function App() {
   }, [setFrameReady, isFrameReady]);
 
   const handleAddFrame = useCallback(async () => {
-    const frameAdded = await addFrame();
-    setFrameAdded(Boolean(frameAdded));
-  }, [addFrame, setFrameAdded]);
+    await addFrame();
+  }, [addFrame]);
 
   const saveFrameButton = useMemo(() => {
     if (!isInFrame) {
       return null;
     }
 
-    if (context && !(context as any)?.frame?.buttonIndex) {
+    if (!isFrameAdded) {
       return (
         <button
           type="button"
@@ -82,17 +81,13 @@ export default function App() {
       );
     }
 
-    if (frameAdded) {
-      return (
-        <div className="flex items-center space-x-1 text-sm font-semibold text-green-600 px-4 py-2">
-          <Check />
-          <span>Saved</span>
-        </div>
-      );
-    }
-
-    return null;
-  }, [context, handleAddFrame, frameAdded, isInFrame]);
+    return (
+      <div className="flex items-center space-x-1 text-sm font-semibold text-green-600 px-4 py-2">
+        <Check />
+        <span>Saved</span>
+      </div>
+    );
+  }, [handleAddFrame, isFrameAdded, isInFrame]);
 
   const questions = [
     {
@@ -174,7 +169,7 @@ export default function App() {
         setMatches(data.matches);
       }
       
-      if ((context as any)?.frame?.buttonIndex) {
+      if (context?.client?.added) {
         await sendNotification({
           title: "Profile Created! 🎉",
           body: data.noMatches ? data.message : "We found some matches for you!"
@@ -290,7 +285,7 @@ export default function App() {
         <div>isInFrame: {String(isInFrame)}</div>
         <div>userAddress: {String(userAddress || 'none')}</div>
         <div>currentStep: {currentStep}</div>
-        <div>frameAdded: {String(frameAdded)}</div>
+        <div>frameAdded: {String(isFrameAdded)}</div>
         <div>buttonIndex: {String((context as any)?.frame?.buttonIndex)}</div>
         <div className="mt-2">
           <div>Current Answers:</div>
