@@ -38,6 +38,8 @@ export default function App() {
   const { login, authenticated, user, logout } = usePrivy();
   const sendNotification = useNotification();
 
+  const fieldOrder = ['focus', 'ecosystem', 'project', 'approach', 'motto'];
+
   useEffect(() => {
     if (!isFrameReady) {
       setFrameReady();
@@ -140,7 +142,7 @@ export default function App() {
 
     setAnswers(prev => ({
       ...prev,
-      [Object.keys(answers)[currentStep]]: answer
+      [fieldOrder[currentStep]]: answer
     }));
     
     if (currentStep < questions.length - 1) {

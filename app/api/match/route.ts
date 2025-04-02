@@ -88,11 +88,11 @@ export async function POST(req: Request) {
     }
 
     const userAnswers: UserAnswers = {
-      focus: answers[Object.keys(answers)[0]],
-      ecosystem: answers[Object.keys(answers)[1]],
-      project: answers[Object.keys(answers)[2]],
-      approach: answers[Object.keys(answers)[3]],
-      motto: answers[Object.keys(answers)[4]]
+      focus: answers.focus,
+      ecosystem: answers.ecosystem,
+      project: answers.project,
+      approach: answers.approach,
+      motto: answers.motto
     };
 
     // Store user profile with wallet address as key
