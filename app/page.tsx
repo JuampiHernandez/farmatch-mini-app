@@ -11,6 +11,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 // import { usePrivy } from "@privy-io/react-auth";
 import Check from "./svg/Check";
 
+// Add Heart SVG component
+const Heart = () => (
+  <svg className="w-8 h-8 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+  </svg>
+);
+
 interface Match {
   address: string;
   score: number;
@@ -121,27 +128,26 @@ export default function App() {
     const field = fieldOrder[currentStep];
     console.log(`[Step ${currentStep + 1}/${questions.length}] Setting ${field} to:`, answer);
     
-    setAnswers(prev => {
-      const newAnswers = {
-        ...prev,
-        [field]: answer
-      };
-      console.log('Current answers state:', newAnswers);
-      return newAnswers;
-    });
+    // Set answers first
+    const newAnswers = {
+      ...answers,
+      [field]: answer
+    };
+    setAnswers(newAnswers);
     
+    // Then handle submission or next step
     if (currentStep < questions.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
-      console.log('Final answers before submission:', answers);
-      await handleSubmit();
+      // For the last question, submit with the updated answers
+      await handleSubmit(newAnswers);
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (finalAnswers = answers) => {
     try {
       const payload = {
-        answers,
+        answers: finalAnswers,
         walletAddress: userAddress,
       };
       console.log('Submitting payload:', payload);
@@ -236,12 +242,11 @@ export default function App() {
     if (currentStep === -1) {
       return (
         <div className="text-center space-y-6">
-          <h2 className="text-xl font-semibold text-gray-800">Ready to find your match?</h2>
           <button
             onClick={() => setCurrentStep(0)}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-base font-semibold"
+            className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-lg font-semibold"
           >
-            Start Questionnaire
+            Start
           </button>
         </div>
       );
@@ -279,6 +284,13 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen sm:min-h-[820px] font-sans bg-gradient-to-b from-purple-50 to-pink-50 text-black items-center relative">
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+        body {
+          font-family: 'Outfit', sans-serif;
+        }
+      `}</style>
+
       {/* Debug Toggle Button */}
       <button
         onClick={() => setShowDebug(prev => !prev)}
@@ -314,12 +326,9 @@ export default function App() {
             {isInFrame && (
               <div className="flex items-center space-x-2">
                 {userAddress && (
-                  <Identity
-                    address={`0x${userAddress.replace('0x', '')}`}
-                    className="!bg-inherit p-0 [&>div]:space-x-2"
-                  >
-                    <Name className="text-inherit" />
-                  </Identity>
+                  <span className="text-gray-800 font-medium">
+                    {context?.user?.displayName || userAddress}
+                  </span>
                 )}
               </div>
             )}
@@ -329,6 +338,7 @@ export default function App() {
 
         <main className="p-6">
           <div className="text-center mb-8">
+            <Heart />
             <h1 className="text-2xl font-bold text-purple-800 mb-2">FarMatch</h1>
             <p className="text-gray-600">Find your perfect Farcaster match</p>
           </div>
