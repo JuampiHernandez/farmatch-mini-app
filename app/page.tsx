@@ -6,9 +6,7 @@ import {
   useOpenUrl,
   useNotification,
 } from "@coinbase/onchainkit/minikit";
-import { Name, Identity } from "@coinbase/onchainkit/identity";
 import { useCallback, useEffect, useMemo, useState } from "react";
-// import { usePrivy } from "@privy-io/react-auth";
 import Check from "./svg/Check";
 
 interface Match {
@@ -17,12 +15,20 @@ interface Match {
   commonalities: string[];
 }
 
+interface UserAnswers {
+  focus: string;
+  ecosystem: string;
+  project: string;
+  approach: string;
+  motto: string;
+}
+
 export default function App() {
   const { setFrameReady, isFrameReady, context } = useMiniKit();
   const [currentStep, setCurrentStep] = useState(-1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
-  const [answers, setAnswers] = useState({
+  const [answers, setAnswers] = useState<UserAnswers>({
     focus: "",
     ecosystem: "",
     project: "",
@@ -36,7 +42,6 @@ export default function App() {
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
   const sendNotification = useNotification();
-  // const { login, authenticated, user, logout } = usePrivy();
 
   const fieldOrder = ['focus', 'ecosystem', 'project', 'approach', 'motto'];
 
