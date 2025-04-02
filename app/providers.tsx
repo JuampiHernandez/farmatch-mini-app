@@ -25,7 +25,7 @@ export function Providers(props: { children: ReactNode }) {
         config={{
           appearance: {
             mode: "auto",
-            theme: "snake",
+            theme: "light",
             name: "FarMatch",
             logo: process.env.NEXT_PUBLIC_ICON_URL,
           },

@@ -1,7 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap");
 
 :root {
-  --snake-background: #e5e5e5;
+  --background: #ffffff;
+  --text: #000000;
+}
+
+.light,
+.dark {
+  background-color: var(--background);
+  color: var(--text);
 }
 
 .snake-light,
