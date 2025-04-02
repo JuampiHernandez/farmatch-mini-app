@@ -5,6 +5,8 @@ import {
   useAddFrame,
   useOpenUrl,
   useNotification,
+  useClose,
+  useViewProfile,
 } from "@coinbase/onchainkit/minikit";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Check from "./svg/Check";
@@ -42,6 +44,8 @@ export default function App() {
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
   const sendNotification = useNotification();
+  const close = useClose();
+  const viewProfile = useViewProfile();
 
   const fieldOrder = ['focus', 'ecosystem', 'project', 'approach', 'motto'];
 
@@ -192,6 +196,10 @@ export default function App() {
   };
 
   const renderMatches = () => {
+    const matchedUsernames = matches.map(match => match.address.split('.')[0]).join(', @');
+    const castText = `I just used Farmatch from @juampi, and got matched with @${matchedUsernames}`;
+    const castUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(castText)}`;
+
     return (
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-green-600 mb-6">Your Builder Matches! 🎉</h2>
@@ -218,6 +226,18 @@ export default function App() {
             </div>
           );
         })}
+        
+        <div className="mt-8 text-center">
+          <button
+            onClick={() => openUrl(castUrl)}
+            className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 font-medium text-sm"
+          >
+            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            Share on Farcaster
+          </button>
+        </div>
       </div>
     );
   };
@@ -330,14 +350,26 @@ export default function App() {
             {isInFrame && (
               <div className="flex items-center space-x-2">
                 {userAddress && (
-                  <span className="text-gray-800 font-medium truncate max-w-[200px]">
+                  <button
+                    onClick={() => viewProfile()}
+                    className="text-gray-800 font-medium truncate max-w-[200px] hover:text-purple-600"
+                  >
                     {truncateText(context?.user?.displayName || userAddress)}
-                  </span>
+                  </button>
                 )}
               </div>
             )}
           </div>
-          <div className="justify-end">{saveFrameButton}</div>
+          <div className="flex items-center space-x-2">
+            {saveFrameButton}
+            <button
+              type="button"
+              onClick={close}
+              className="cursor-pointer bg-transparent font-semibold text-sm text-gray-600 hover:text-gray-800"
+            >
+              Close
+            </button>
+          </div>
         </header>
 
         <main className="p-6">
