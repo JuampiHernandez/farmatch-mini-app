@@ -41,8 +41,8 @@ export default function App() {
   const fieldOrder = ['focus', 'ecosystem', 'project', 'approach', 'motto'];
 
   // Check if we're in a Farcaster frame context
-  const isInFrame = Boolean(context?.client?.verified);
-  const userAddress = context?.client?.address || '';
+  const isInFrame = Boolean((context?.client as any)?.fid);
+  const userAddress = (context?.client as any)?.verified_accounts?.[0] || '';
 
   useEffect(() => {
     if (!isFrameReady) {
