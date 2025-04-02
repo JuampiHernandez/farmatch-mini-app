@@ -1,3 +1,7 @@
+# FarMatch
+
+FarMatch is a Farcaster Mini-app focus on matching user based on their likes. More updates coming soon.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-onchain --mini`]().
 
 ## Getting Started
