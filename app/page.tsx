@@ -140,10 +140,17 @@ export default function App() {
       return;
     }
 
-    setAnswers(prev => ({
-      ...prev,
-      [fieldOrder[currentStep]]: answer
-    }));
+    const field = fieldOrder[currentStep];
+    console.log(`Setting ${field} to:`, answer);
+    
+    setAnswers(prev => {
+      const newAnswers = {
+        ...prev,
+        [field]: answer
+      };
+      console.log('Updated answers:', newAnswers);
+      return newAnswers;
+    });
     
     if (currentStep < questions.length - 1) {
       setCurrentStep(prev => prev + 1);
@@ -154,6 +161,7 @@ export default function App() {
 
   const handleSubmit = async () => {
     try {
+      console.log('Submitting answers:', answers);
       const response = await fetch('/api/match', {
         method: 'POST',
         headers: {
@@ -166,6 +174,7 @@ export default function App() {
       });
 
       const data = await response.json();
+      console.log('Response from server:', data);
 
       if (data.success) {
         setIsSubmitted(true);

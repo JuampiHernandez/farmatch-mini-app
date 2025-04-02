@@ -79,6 +79,7 @@ function calculateMatchScore(userAddress: string, userAnswers: UserAnswers, othe
 export async function POST(req: Request) {
   try {
     const { answers, walletAddress } = await req.json();
+    console.log('Received answers:', answers);
 
     if (!walletAddress) {
       return NextResponse.json({ 
@@ -94,12 +95,16 @@ export async function POST(req: Request) {
       approach: answers.approach,
       motto: answers.motto
     };
+    console.log('Processed userAnswers:', userAnswers);
 
     // Store user profile with wallet address as key
-    await redis.hset(`user:${walletAddress}`, {
+    const dataToStore = {
       ...userAnswers,
       timestamp: Date.now(),
-    });
+    };
+    console.log('Data being stored in Redis:', dataToStore);
+    
+    await redis.hset(`user:${walletAddress}`, dataToStore);
 
     // Get all other users
     const users = await redis.keys('user:*');
